@@ -823,19 +823,26 @@ The adaptations that are shipped with the KnobKraft Orm are stored in the adapta
 A couple of notes I (https://github.com/radekpilich) wish I had a week or two back, when I stared fixing and creating adaptions:
 
 ### The difference between patchNo, program, program_number
-* patchNo =  actual number in the database (patches table), by default 0-based location of the patch within the synth, whole synth = numberOfPatchesPerBank * numberOfBanks, i.e. 8 * 4 = 0-31. Can be customized (i.e. ofset or starting from zero for each pattern) with the numberFromDump function.
-* program = adoption dervied variable, should be used as to represent a program change number of a given patch, both for sending and receiving patches.
-* program_number = 0-based location of the patch within it's bank (a user bank in the GUI / patch_in_list table in the DB), not a part of the actual patch, it represents the position of the patch in the given list
+* patchNo =  actual number in the database (patches table in the DB), by default 0-based location of the patch within the synth, whole synth = numberOfPatchesPerBank * numberOfBanks, i.e. 8 * 4 = 0-31. Can be non-unique and customized (i.e. ofset or starting from zero for each pattern) with the numberFromDump function (created during import into database and then remains static.
+* program = adoption dervied variable, should be used to represent a program change number of a given patch (or program change equivalent a given synth uses), used in functions that deal with sysex patches on the synth (both sending and receiving) as a bridge between patch location in KnobKraft (see program_number below) and patch location on synth
+* program_number = 0-based location of the patch within it's bank (a user bank in the GUI / patch_in_list table in the DB), not a part of the actual patch, it represents the position of the patch in the given list. Cannot be tempered with - first position in list is always 0, second 1 etc.
 
 ### MIDI, SysEx, Hex / Dec
-* all indexes mostly start from 0 instead of 1
+* indexes mostly start from 0 instead of 1
+  * channel 0 = MIDI channel 1
+  * bank 0 = first bank
+  * program 0 = first program
   * message[0] = first byte of the message
   * message[7] = eight byte of the message
   * message[2:4] = third and fourth byte of the message
   * message[4:6] = fifth and sixth byte of the message
+* counts on the other hand are natural numbers
+  * numberOfPatches 128 = 128 patches, indexed 0-127
+  * numberOfBanks 4 = 4 banks, indexed 0-3
 * 0x10 = 0x means hexadecimal
-  * 0x10 hexadecimal = 16 decimal
-  * There is no 1x10 or 2x10, only the two numbers/letters after 0x are the actual hexadecimal value.
+  * 0x10 in hexadecimal = 16 in decimal
+  * 0x20 = 32, 0x40 = 64, 0x7f = 127
+  * There is no 1x10 or 2x10, only the last two numbers/letters after are the actual hexadecimal value.
 
 ### Adaption Functions 
 * convertToEditBuffer = sends sound from KK to synth - edit buffer only - does not overwrite synth memory

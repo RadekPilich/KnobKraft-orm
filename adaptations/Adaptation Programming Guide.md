@@ -817,3 +817,39 @@ https://github.com/christofmuc/KnobKraft-orm/blob/master/adaptations/implementat
 
 
 The adaptations that are shipped with the KnobKraft Orm are stored in the adaptations subdirectory of the program directory. Check them out there as well.
+
+# Study Notes
+
+A couple of notes I (https://github.com/radekpilich) wish I had a week or two back, when I stared fixing and creating adaptions:
+
+### The difference between patchNo, program, program_number
+* patchNo =  actual number in the database (patches table), by default 0-based location of the patch within the synth, whole synth = numberOfPatchesPerBank * numberOfBanks, i.e. 8 * 4 = 0-31. Can be customized (i.e. ofset or starting from zero for each pattern) with the numberFromDump function.
+* program = adoption dervied variable, should be used as to represent a program change number of a given patch, both for sending and receiving patches.
+* program_number = 0-based location of the patch within it's bank (a user bank in the GUI / patch_in_list table in the DB), not a part of the actual patch, it represents the position of the patch in the given list
+
+### MIDI, SysEx, Hex / Dec
+* all indexes mostly start from 0 instead of 1
+  * message[0] = first byte of the message
+  * message[7] = eight byte of the message
+  * message[2:4] = third and fourth byte of the message
+  * message[4:6] = fifth and sixth byte of the message
+* 0x10 = 0x means hexadecimal
+  * 0x10 hexadecimal = 16 decimal
+  * There is no 1x10 or 2x10, only the two numbers/letters after 0x are the actual hexadecimal value.
+
+### Adaption Functions 
+* convertToEditBuffer = sends sound from KK to synth - edit buffer only - does not overwrite synth memory
+* convertToProgramDump = sends sound from KK to synth - stores it to a specified memory slot
+* bankDescriptors =
+* nameFromDump = new_name is the text from the patch name edit box in GUI, output is the new changed patch data sysex stored in the database
+* renamePatch =
+* message = single sysex message - could be a 8 byte dump request or a 1000 byte patch dump or anything beyond and in between
+* data = generally used as a buffer for storing the patch data sysex from the database as it is being modified within the adaption functions
+
+### Python
+* % = modulus - a % b returns the remainder after dividing a by b. ->  250 mod 100 = 50
+* // divide with integral result (discard remainder)  250 // 100 = 2
+* strip() function removes leading and trailing spaces to return a copy of the original string
+* == logical comparison, = value assignment
+* indents cannot be random, must follow nesting structure
+

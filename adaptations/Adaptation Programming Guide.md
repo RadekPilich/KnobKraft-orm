@@ -823,9 +823,29 @@ by https://github.com/radekpilich
 A couple of notes I  wish I had a week or two back, when I stared fixing and creating adaptions:
 
 ### The difference between patchNo, program, program_number
-* patchNo = patch number in the database ("patches" table in the DB), by default produced by the "Import patches from synth" menu function as a 0-based location of the patch within the synth's bank structure. Synth's bank structure is defined by the adaption as numberOfPatchesPerBank * numberOfBanks, i.e. 64 * 4 = 0-255. The number can however be non-unique and can be customized with the numberFromDump function during the patch import into the database and then remains static.\
-* program_number = 0-based location of the patch within the synth's bank structure (same as above), with the difference that it cannot be tempered with. It is not a part of the actual patch in this case, it is "an emerged property" that represents the position of the patch in a list (a user bank in the GUI / patch_in_list table in the DB). The first position in the list is always 0, second 1 etc.
-* program = adaption dervied variable, should be used to represent a program change number of a given patch, or program change equivalent a given synth uses. It is used in functions that deal with sysex programs (patches on the synth / in DB). It serves as a bridge between patch location in KnobKraft (see program_number above) and patch location on synth.
+* patchNo = patch number in the database ("patches" table in the DB)
+  * by default produced by the "Import patches from synth" menu function as a 0-based location of the patch within the synth's bank structure
+  * Synth's bank structure is defined by the adaption at the time of bank(s) import as numberOfPatchesPerBank * numberOfBanks, i.e. 64 * 4 = 0-255.
+  * The default number can however freely overriden via the numberFromDump function
+  * It's purpose is only sorting of imported patches and possible variable value derivations (*see example below once you've read the whole through all the bullets)
+  * It can be non-unique and can be customized during the patch import into the database
+  * Remains static once written in the database during the initial import (actually, I have to check if re-imports of existing patches update it or not)
+* program_number = position of the patch in a list (a user bank in the GUI / "patch_in_list" table in the DB)
+  * 0-based location of the patch within a signle synth bank
+  * It is not a property of the actual patch, it is dynamically assigned by the GUI and represents the position of the patch in the "In synth" or "User bank" lists
+  * These lists are stored in the "patch_in_list" table in the DB as ordered lists of references to the imported patches in the "patches" DB table
+  * The first position in the list is always 0, second 1 etc.
+  * program_number can be named slightly differently in each adoption, it can even be named as patchNo! What actually differentiates which number (DB vs. GUI) is being used is the function's programming in the back end.   
+* program = adaption dervied variable
+  *  Should be used to represent a program change number of a given patch, or program change equivalent a given synth uses
+  *  It is used in functions that deal with sysex program data (patches on the synth / in DB)
+  *  It serves as a traversal bridge between patch number in KnobKraft (patchNo/program_number) and patch location on synth (pointed at via a specific byte in request/response messages.
+
+            patchNo offset trick:
+              on 256 programs synth with 4 banks, you could offset the imports to start at 256 instead of at 0
+              this gives you the possibility to derive different friendlyBankName and friendlyProgramName for patches depending on whether you are looking at the actual imported patches (data) or at patches in the banks (references)
+              patches in the list will provide the adaption with number between 0-255
+              patches in the database will have numbers betwen 256-320 (if you decide to ignore the info of the source bank), between 256-512 (if you keep counting across banks) or you could simply label them all 256 (you will loose the original order information) or anything else you come up with possibly depending on the data you extract from sysex - i.e. you could sort your imports based on envelope release length!
 
 ### MIDI, SysEx, Hex / Dec
 * indexes mostly start from 0 instead of 1

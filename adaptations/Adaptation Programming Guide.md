@@ -824,7 +824,7 @@ by https://github.com/radekpilich
 A couple of notes I  wish I had a week or two back, when I stared fixing and creating adaptions:
 
 ### The difference between program_number, patchNo, program
-You must read and comprehened the whole section, otherwise looking at some statements in isolation, it could be legitemately claimed, that they are not true.
+You must read and comprehened the whole section, otherwise looking at some statements in isolation, it could be rightfully said, that they are not true.
 
 * program_number = position of the patch in the list ("patch_in_list" table in the DB)
   * 0-based position of the patch within a specific single synth bank (list)

@@ -820,34 +820,52 @@ The adaptations that are shipped with the KnobKraft Orm are stored in the adapta
 
 # Study Notes
 by https://github.com/radekpilich
+
 A couple of notes I  wish I had a week or two back, when I stared fixing and creating adaptions:
 
-### The difference between patchNo, program, program_number
-* patchNo = patch number in the database ("patches" table in the DB)
-  * by default produced by the "Import patches from synth" menu function as a 0-based location of the patch within the synth's bank structure
-  * Synth's bank structure is defined by the adaption at the time of bank(s) import as numberOfPatchesPerBank * numberOfBanks, i.e. 64 * 4 = 0-255.
-  * The default number can however freely overriden via the numberFromDump function
-  * It's purpose is only sorting of imported patches and possible variable value derivations (*see example below once you've read the whole through all the bullets)
-  * It can be non-unique and can be customized during the patch import into the database
-  * Remains static once written in the database during the initial import (actually, I have to check if re-imports of existing patches update it or not)
-* program_number = position of the patch in a list (a user bank in the GUI / "patch_in_list" table in the DB)
-  * 0-based location of the patch within a signle synth bank
-  * It is not a property of the actual patch, it is dynamically assigned by the GUI and represents the position of the patch in the "In synth" or "User bank" lists
-  * These lists are stored in the "patch_in_list" table in the DB as ordered lists of references to the imported patches in the "patches" DB table
+### The difference between program_number, patchNo, program
+
+* program_number = position of the patch in the list ("patch_in_list" table in the DB)
+  * 0-based position of the patch within a specific single synth bank (list)
+  * It is not a property of the actual imported patch!
+  * It is dynamically assigned in relation to the GUI and represents the position of the patch in the "In synth" or "User bank" lists
+  * These lists are stored in the DB as ordered lists of references to the imported patches
   * The first position in the list is always 0, second 1 etc.
-  * program_number can be named slightly differently in each adoption, it can even be named as patchNo! What actually differentiates which number (DB vs. GUI) is being used is the function's programming in the back end.   
-* program = adaption dervied variable
-  *  Should be used to represent a program change number of a given patch, or program change equivalent a given synth uses
-  *  It is used in functions that deal with sysex program data (patches on the synth / in DB)
-  *  It serves as a traversal bridge between patch number in KnobKraft (patchNo/program_number) and patch location on synth (pointed at via a specific byte in request/response messages.
+
+* patchNo = patch number in the database ("patches" table in the DB)
+  * by default produced by the "Import patches from synth" function as a 0-based location of the patch within the synth's bank structure
+  * Synth's bank structure is defined by the adaption as numberOfPatchesPerBank * numberOfBanks, i.e. 64 * 4 = 0-255 (more recently bankDescriptors function is being used to determine the structure)
+  * The default number assignment can however freely overriden via the numberFromDump function (*see example "patchNo offset trick" below once you've read through all the bullets a couple of times)
+  * It can be non-unique and can be customized during the patch import into the database
+  * The purpose of hte patchNo is only sorting of imported patches and possible variable value derivations (*see example "patchNo offset trick")
+  * patchNo remains static once written in the database during the initial import (*actually, I have to check if it gets updated on existing patches during re-import de-duplication)
+    
+         let's get confused again:
+           * program_number can be named slightly differently in each adaption...
+           * ....it can even be named as patchNo!
+           * What actually differentiates which number is going to be used (import DB vs. list GUI) is the function's programming in the backend
+           * It is the position of the variable in the function definition ("positional argument") that is linked to either of those numbers
+           * It is up us developers of the adaptions to learn which one is used where and to choose to use two distinct names in order to be mindful of the different data sources being used by a given function
+
+* program = adaption dervied variable (lasts only while a function is running)
+  *  It is used in functions that process / modifiy the sysex program data (actual program on the synth / in DB)
+  *  Should be generaly used to represent a program change number of a given patch, or program change equivalent a given synth uses (i.e. a value of a specific byte in request/dump message)
+  *  It usually serves as a traversal bridge between patch number in KnobKraft (patchNo/program_number) and patch location on synth (pointed at via a program change or a specific byte in request/dump messages)
 
             patchNo offset trick:
-              on 256 programs synth with 4 banks, you could offset the imports to start at 256 instead of at 0
-              this gives you the possibility to derive different friendlyBankName and friendlyProgramName for patches depending on whether you are looking at the actual imported patches (data) or at patches in the banks (references)
-              patches in the list will provide the adaption with number between 0-255
-              patches in the database will have numbers betwen 256-320 (if you decide to ignore the info of the source bank), between 256-512 (if you keep counting across banks) or you could simply label them all 256 (you will loose the original order information) or anything else you come up with possibly depending on the data you extract from sysex - i.e. you could sort your imports based on envelope release length!
+             * On a 256 programs synth with 4 banks, you could offset the imports to start at 256 instead of at 0
+             * Patches in the list will provide the adaption with number between 0-255, no matter what you do to patchNo
+             * Patches in the database could have:
+                 * numbers betwen 256-320 (if you decide to ignore and loose the info of the import bank)
+                 * numbers between 256-512 (if you keep counting across banks and will be able to derive import bank later)
+                 * you could simply label them all with 256 (in this case you will loose the information on the original order of patches)
+                 * anything else you come up with, possibly depending on the data you extract from sysex - i.e. you could for example sort imported patches based on envelope release length!
+             * This gives you the possibility to for example:
+                 * derive different friendlyBankName and friendlyProgramName for patches depending on whether you are looking at the actual imported patches (data) or at the instances of the patches in the banks (list references)
+             
 
 ### MIDI, SysEx, Hex / Dec
+
 * indexes mostly start from 0 instead of 1
   * channel 0x00 = MIDI channel 1
   * bank 0x00 = first bank
@@ -856,9 +874,11 @@ A couple of notes I  wish I had a week or two back, when I stared fixing and cre
   * message[7] = eight byte of the message
   * message[2:4] = third and fourth byte of the message
   * message[4:6] = fifth and sixth byte of the message
+    
 * counts on the other hand are natural numbers
   * numberOfPatches 128 = 128 patches, indexed 0-127
   * numberOfBanks 4 = 4 banks, indexed 0-3
+    
 * 0x10 = 0x means hexadecimal
   * 0x10 in hexadecimal = 16 in decimal
   * 0x20 = 32, 0x40 = 64, 0x7f = 127
@@ -866,6 +886,7 @@ A couple of notes I  wish I had a week or two back, when I stared fixing and cre
   * Can be used interchangably. 
 
 ### Adaption Functions 
+
 * convertToEditBuffer = sends sound from KK to synth - edit buffer only - does not overwrite synth memory
 * convertToProgramDump = sends sound from KK to synth - stores it to a specified memory slot
 * bankDescriptors = structure of the "In synth" banks tree in KnobKraft
@@ -875,6 +896,7 @@ A couple of notes I  wish I had a week or two back, when I stared fixing and cre
 * data = generally used as a working memory buffer for carrying the program sysex from the database as it is being modified within the adaption functions before being dumped onto synth or back into database.
 
 ### Python
+
 * % modulus - a % b returns the remainder after dividing a by b -> 250 mod 100 = 50
 * // divide with integral result (discard remainder) -> 250 // 100 = 2
 * strip() function removes leading and trailing spaces from the input string

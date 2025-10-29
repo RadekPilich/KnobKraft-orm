@@ -819,19 +819,19 @@ https://github.com/christofmuc/KnobKraft-orm/blob/master/adaptations/implementat
 The adaptations that are shipped with the KnobKraft Orm are stored in the adaptations subdirectory of the program directory. Check them out there as well.
 
 # Study Notes
-
-A couple of notes I (https://github.com/radekpilich) wish I had a week or two back, when I stared fixing and creating adaptions:
+by https://github.com/radekpilich
+A couple of notes I  wish I had a week or two back, when I stared fixing and creating adaptions:
 
 ### The difference between patchNo, program, program_number
-* patchNo =  actual number in the database (patches table in the DB), by default 0-based location of the patch within the synth, whole synth = numberOfPatchesPerBank * numberOfBanks, i.e. 8 * 4 = 0-31. Can be non-unique and customized (i.e. ofset or starting from zero for each pattern) with the numberFromDump function (created during import into database and then remains static.
-* program = adoption dervied variable, should be used to represent a program change number of a given patch (or program change equivalent a given synth uses), used in functions that deal with sysex patches on the synth (both sending and receiving) as a bridge between patch location in KnobKraft (see program_number below) and patch location on synth
-* program_number = 0-based location of the patch within it's bank (a user bank in the GUI / patch_in_list table in the DB), not a part of the actual patch, it represents the position of the patch in the given list. Cannot be tempered with - first position in list is always 0, second 1 etc.
+* patchNo = patch number in the database ("patches" table in the DB), by default produced by the "Import patches from synth" menu function as a 0-based location of the patch within the synth's bank structure. Synth's bank structure is defined by the adaption as numberOfPatchesPerBank * numberOfBanks, i.e. 64 * 4 = 0-255. The number can however be non-unique and can be customized with the numberFromDump function during the patch import into the database and then remains static.\
+* program_number = 0-based location of the patch within the synth's bank structure (same as above), with the difference that it cannot be tempered with. It is not a part of the actual patch in this case, it represents the position of the patch in a list (a user bank in the GUI / patch_in_list table in the DB). Cannot be tempered with - first position in list is always 0, second 1 etc.
+* program = adaption dervied variable, should be used to represent a program change number of a given patch, or program change equivalent a given synth uses. It is used in functions that deal with sysex programs (patches on the synth / in DB). It serves as a bridge between patch location in KnobKraft (see program_number above) and patch location on synth.
 
 ### MIDI, SysEx, Hex / Dec
 * indexes mostly start from 0 instead of 1
-  * channel 0 = MIDI channel 1
-  * bank 0 = first bank
-  * program 0 = first program
+  * channel 0x00 = MIDI channel 1
+  * bank 0x00 = first bank
+  * program 0x00 = first program
   * message[0] = first byte of the message
   * message[7] = eight byte of the message
   * message[2:4] = third and fourth byte of the message
@@ -843,20 +843,21 @@ A couple of notes I (https://github.com/radekpilich) wish I had a week or two ba
   * 0x10 in hexadecimal = 16 in decimal
   * 0x20 = 32, 0x40 = 64, 0x7f = 127
   * There is no 1x10 or 2x10, only the last two numbers/letters after are the actual hexadecimal value.
+  * Can be used interchangably. 
 
 ### Adaption Functions 
 * convertToEditBuffer = sends sound from KK to synth - edit buffer only - does not overwrite synth memory
 * convertToProgramDump = sends sound from KK to synth - stores it to a specified memory slot
-* bankDescriptors =
-* nameFromDump = new_name is the text from the patch name edit box in GUI, output is the new changed patch data sysex stored in the database
-* renamePatch =
-* message = single sysex message - could be a 8 byte dump request or a 1000 byte patch dump or anything beyond and in between
-* data = generally used as a buffer for storing the patch data sysex from the database as it is being modified within the adaption functions
+* bankDescriptors = structure of the "In synth" banks tree in KnobKraft
+* nameFromDump = 
+* renamePatch =new_name is the text from the patch name edit box in GUI, output is the new changed patch data sysex stored in the database
+* message = single sysex message - could be a 8 byte dump request, a 1000 byte patch dump or anything beyond and in between
+* data = generally used as a working memory buffer for carrying the program sysex from the database as it is being modified within the adaption functions before being dumped onto synth or back into database.
 
 ### Python
-* % = modulus - a % b returns the remainder after dividing a by b. ->  250 mod 100 = 50
-* // divide with integral result (discard remainder)  250 // 100 = 2
-* strip() function removes leading and trailing spaces to return a copy of the original string
+* % modulus - a % b returns the remainder after dividing a by b -> 250 mod 100 = 50
+* // divide with integral result (discard remainder) -> 250 // 100 = 2
+* strip() function removes leading and trailing spaces from the input string
 * == logical comparison, = value assignment
-* indents cannot be random, must follow nesting structure
+* indents cannot be random, must be alligned and follow the logical nesting structure
 

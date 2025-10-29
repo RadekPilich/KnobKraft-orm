@@ -833,8 +833,8 @@ You must read and comprehened the whole section, otherwise looking at some state
   * In could be thought of as related to the GUI
   * These lists are stored in the DB as ordered lists of hashes referencing the imported patches
   * The first position in the list is always 0, second 1 etc.
-  * With every change to the list in GUI, the list and it's program_numbers in the DB are updated
-  * Very frequently it is actually NOT VISIBLE in the GUI, because it is overriden by the friendlyProgramName function, but it stays in the background and enters other functions (will be explained below)
+  * With every change to the list in GUI, the patch contents and patch order (order = program_number) of the list in the DB is updated
+  * Very frequently, the program_number is actually NOT VISIBLE in the GUI, because it is overriden by the friendlyProgramName function, but it always exists in the background and enters as parameter into other functions (will be explained below)
 
 * patchNo = patch number in the database ("patches" table in the DB)
   * Produced by the "Import patches from synth" function as a 0-based location of the patch within the synth's bank structure

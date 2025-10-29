@@ -829,7 +829,7 @@ A couple of notes I  wish I had a week or two back, when I stared fixing and cre
   * 0-based position of the patch within a specific single synth bank (list)
   * It is not a property of the actual imported patch!
   * It is dynamically assigned in relation to the GUI and represents the position of the patch in the "In synth" or "User bank" lists
-  * These lists are stored in the DB as ordered lists of references to the imported patches
+  * These lists are stored in the DB as ordered lists of hashes referencing the imported patches
   * The first position in the list is always 0, second 1 etc.
 
 * patchNo = patch number in the database ("patches" table in the DB)

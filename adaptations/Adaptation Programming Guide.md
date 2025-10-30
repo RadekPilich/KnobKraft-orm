@@ -843,7 +843,7 @@ You must read and comprehened the whole section, otherwise looking at some state
   * The purpose of hte patchNo is only sorting of imported patches and possible derivations of variables for adaption customization (*see example "patchNo offset trick" below later)
   * patchNo remains static once written in the database during the initial import (*actually, I have to check if it gets updated on existing patches during re-import de-duplication)
 
-* program = adaption dervied variable (lasts only while a function is running)
+* program = dervied variable in adaption function (value exists only while the function is running)
   *  Commonly used in functions that process/modifiy the sysex program data or as a buffer for manipulating patchNo/program_number into a different format/offset
   *  Commonly used to represent a program change number of a given patch, or more frequently a sysex byte equivalent of the program change number a given synth uses (a specific byte in request/dump message)
   *  Commonly used as a traversal bridge between patch number in KnobKraft (patchNo/program_number) and patch location on synth (pointed at via a program change number or a specific byte in request/dump messages)

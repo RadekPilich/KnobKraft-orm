@@ -861,8 +861,8 @@ You must read and comprehened the whole section, otherwise looking at some state
 > #### patchNo offset trick:
 > On a 256 programs synth with 4 banks, you could use numberFromDump function to offset the imports to start at 256 instead of at 0 <br>
 > Patches imported into the database could have a patchNo: <br>
-> * numbers betwen 256-320 (if you decide to ignore and loose the info of the import bank) <br>
 > * numbers between 256-512 (if you keep counting across banks and will be able to derive import bank later) <br>
+> * numbers betwen 256-320 (if you decide to ignore and loose the info of the import bank) <br>
 > * you could simply label them all with 256 (in this case you will loose the information on the original order of patches) <br>
 > * anything else you come up with, possibly depending on the data you extract from sysex - i.e. you could for example sort imported patches based on envelope release length! <br>
 > 

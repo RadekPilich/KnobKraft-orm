@@ -842,29 +842,34 @@ You must read and comprehened the whole section, otherwise looking at some state
   * The default number assignment can however be freely overriden via the numberFromDump function during the patch import into the database
   * The purpose of hte patchNo is only sorting of imported patches and possible derivations of variables for adaption customization (*see example "patchNo offset trick" below later)
   * patchNo remains static once written in the database during the initial import (*actually, I have to check if it gets updated on existing patches during re-import de-duplication)
-    
-         let's get confused again:
-           * program_number can be named slightly differently in each adaption...
-           * ....it can even be named as patchNo!
-           * **What actually determines which number is going to be used (number from import/dump vs. number from list) is the backend programming of adaption functions that use them!**
-           * It is the position of the variable in the function definition ("positional argument") that is linked to either of those numbers
-           * It is up to us developers of adaptions to learn which one is used where and to choose to use two distinct names in order to be mindful of the different number sources being used by a given function
 
 * program = adaption dervied variable (lasts only while a function is running)
   *  Commonly used in functions that process/modifiy the sysex program data or as a buffer for manipulating patchNo/program_number into a different format/offset
   *  Commonly used to represent a program change number of a given patch, or more frequently a sysex byte equivalent of the program change number a given synth uses (a specific byte in request/dump message)
   *  Commonly used as a traversal bridge between patch number in KnobKraft (patchNo/program_number) and patch location on synth (pointed at via a program change number or a specific byte in request/dump messages)
+    
+> #### Let's get confused again:
+> program_number can be named slightly differently in each adaption... <br>
+> ....it can even be named as patchNo! <br>
+> <br>
+> **What actually determines which number is going to be used (number from import/dump vs. number from list) is the backend programming of adaption functions that use them!** <br>
+> <br>
+> It is the position of the variable in the function definition ("positional argument") that is linked to either of those numbers <br>
+> <br>
+> It is up to us developers of adaptions to learn which one is used where and to choose to use two distinct names in order to be mindful of the different number sources being used by a given function <br>
 
-            patchNo offset trick:
-             * On a 256 programs synth with 4 banks, you could use numberFromDump function to offset the imports to start at 256 instead of at 0
-             * Patches imported into the database could have a patchNo:
-                 * numbers betwen 256-320 (if you decide to ignore and loose the info of the import bank)
-                 * numbers between 256-512 (if you keep counting across banks and will be able to derive import bank later)
-                 * you could simply label them all with 256 (in this case you will loose the information on the original order of patches)
-                 * anything else you come up with, possibly depending on the data you extract from sysex - i.e. you could for example sort imported patches based on envelope release length!
-             * Patches in the lists will be assigned with number between 0-255, no matter what you do to patchNo
-             * This gives you the possibility to for example:
-                 * derive different friendlyBankName and friendlyProgramName for patches depending on whether you are looking at the actual imported patches (data) or at the instances of the patches in the banks (list references)
+> #### patchNo offset trick:
+> On a 256 programs synth with 4 banks, you could use numberFromDump function to offset the imports to start at 256 instead of at 0 <br>
+> Patches imported into the database could have a patchNo: <br>
+> * numbers betwen 256-320 (if you decide to ignore and loose the info of the import bank) <br>
+> * numbers between 256-512 (if you keep counting across banks and will be able to derive import bank later) <br>
+> * you could simply label them all with 256 (in this case you will loose the information on the original order of patches) <br>
+> * anything else you come up with, possibly depending on the data you extract from sysex - i.e. you could for example sort imported patches based on envelope release length! <br>
+> 
+> Patches in the lists will be assigned with number between 0-255, no matter what you do to patchNo <br>
+> <br>
+> This gives you the possibility to for example: <br>
+> * derive different friendlyBankName and friendlyProgramName for patches depending on whether you are looking at the actual imported patches (data) or at the instances of the patches in the banks (list references) <br>
              
 
 ### MIDI, SysEx, Hex / Dec

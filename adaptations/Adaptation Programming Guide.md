@@ -848,7 +848,7 @@ You must read and comprehened the whole section, otherwise looking at some state
   *  Commonly used to represent a program change number of a given patch, or more frequently a sysex byte equivalent of the program change number a given synth uses (a specific byte in request/dump message)
   *  Commonly used as a traversal bridge between patch number in KnobKraft (patchNo/program_number) and patch location on synth (pointed at via a program change number or a specific byte in request/dump messages)
     
-> #### Let's get confused again:
+> #### Let's get confused again before we clear out the confusion:
 > program_number can be named slightly differently in each adaption... <br>
 > ....it can even be named as patchNo! <br>
 > <br>

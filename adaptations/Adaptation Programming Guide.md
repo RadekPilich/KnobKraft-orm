@@ -824,7 +824,7 @@ by https://github.com/radekpilich
 A couple of notes I  wish I had a week or two back, when I stared fixing and creating adaptions:
 
 ### The difference between program_number, patchNo, program
-You must read and comprehened the whole section, otherwise looking at some statements in isolation, it could be rightfully said, that they are not true.
+Read and comprehened the whole section, otherwise looking at some statements in isolation, it could be rightfully said, that they are not true.
 
 * program_number = position of the patch in the list ("patch_in_list" table in the DB)
   * 0-based position of the patch within a specific single synth bank (list)
@@ -859,17 +859,17 @@ You must read and comprehened the whole section, otherwise looking at some state
 > It is up to us developers of adaptions to learn which one is used where and to choose to use two distinct names in order to be mindful of the different number sources being used by a given function <br>
 
 > #### patchNo offset trick:
-> On a 256 programs synth with 4 banks, you could use numberFromDump function to offset the imports to start at 256 instead of at 0 <br>
+> On a 256 programs synth with 4 banks, we could use numberFromDump function to offset the imports to start at 256 instead of at 0 <br>
 > Patches imported into the database could have a patchNo: <br>
-> * numbers between 256-512 (if you keep counting across banks, which would give you a possibility to derive the original import bank later) <br>
-> * numbers betwen 256-320 (if you decide to ignore and loose the info of the import bank) <br>
-> * you could simply label them all with 256 (in this case you will loose the information on the original order of patches) <br>
-> * anything else you come up with, possibly depending on the data you extract from sysex - i.e. you could for example sort imported patches based on envelope release length! <br>
+> * numbers between 256-512 (if we keep counting across banks, which would give us a possibility to derive the original import bank later) <br>
+> * numbers betwen 256-320 (if we decide to ignore and loose the info of the import bank) <br>
+> * we could simply label them all with 256 (in this case we will loose the information on the original order of patches) <br>
+> * anything else we come up with, possibly depending on the data we extract from sysex - i.e. we could for example sort imported patches based on envelope release length! <br>
 > 
-> Patches in the lists will be assigned with number between 0-255, no matter what you do to patchNo <br>
+> Patches in the lists will be assigned with number between 0-255, no matter what we do to patchNo <br>
 > <br>
-> This gives you the possibility to for example: <br>
-> * derive different friendlyBankName and friendlyProgramName for patches depending on whether you are looking at the actual imported patches (data) or at the instances of the patches in the banks (list references) <br>
+> This gives us the possibility to for example: <br>
+> * derive different friendlyBankName and friendlyProgramName for patches depending on whether we are looking at the actual imported patches (data) or at the instances of the patches in the banks (list references) <br>
              
 
 ### MIDI, SysEx, Hex / Dec

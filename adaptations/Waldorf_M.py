@@ -10,7 +10,6 @@ import hashlib
 from copy import copy
 from typing import List, Optional
 
-from BACKUP.Waldorf_M import WALDORF_M
 import testing
 import string
 import time
@@ -108,7 +107,7 @@ DUMP_MULTI = 0x73       #Dump Multi Arrangement 0x73
 def createDeviceDetectMessage(channel):
     # Just request the edit buffer - allegedly, it does not use the device id so that could be quick
     # The parameter is ignored, it defaults to 0x7f 127 when it hasn't been detected yet
-    return createEditBufferRequest(127)
+    return createEditBufferRequest(channel, 127)
 
 def needsChannelSpecificDetection():
     return False

@@ -13,7 +13,7 @@ from typing import List, Optional
 import testing
 import string
 import time
-#--------------------------------------------- ADOPTION
+#--------------------------------------------- ADAPTION
 
 def name():
     return "Waldorf M"
@@ -37,51 +37,6 @@ def setupHelp():
         "6. Similar to above -  multiDumpWait() function is used to set delay between Multi program changes when downloading Multis into KnobKraft. Time around 500 ms seems to be enough. If it is too short for the synth, it will skip downloading some slots.\n\n" \
         "7. The Wait functions effectively pause the KnobKraft createDumpRequest cycles rather then overriding the generalMessageDelay. This is done because we are sending a series of messages during the requests in order to automate single / multi mode switching and we don't need delay between individual messages, we need delay between programs.\n\n" \
 
-def numberOfBanks():
-    return 1+16
-
-def numberOfPatchesPerBank():
-    return 128
-    
-def adaptChannel():
-    return 1             # 0-based, so 1 means channel 2 on the synth
-
-def bankDescriptors():
-    return [{"bank": x, "name": f"Multi Bank A", "size": 128, "type": "Arrangement"} for x in range(1)] + [{"bank": x, "name": f"Bank {(x-1):02d}", "size": 128, "type": "Patch"} for x in range(1,17)]
-
-def bankSelect(channel, bank):
-    if bank == 0: #multi
-        #byte 5 - arrangement to load 0-127  byte 6 - ignored byte 7 - ignored
-        return [0xf0, WALDORF_ID, WALDORF_M, 0x00, CHANGE_MODE, 0x01, 0x00, 0x00, 0xf7]
-    return [0xf0, WALDORF_ID, WALDORF_M, 0x00, CHANGE_MODE, 0x00, 0x00, 0x00, 0xf7] + [0xb0|(channel & 0x0f), 32, bank-1]
-
-def createCustomProgramChange(channel, patchNo):
-    bank = patchNo // numberOfPatchesPerBank()
-    program = patchNo % numberOfPatchesPerBank()
-    if bank == 0: #multi
-            # switch to multi + change arrangement
-            return [0xf0, WALDORF_ID, WALDORF_M, 0x00, CHANGE_MODE, 0x01, 0x00, 0x00, 0xf7] + [0xf0, WALDORF_ID, WALDORF_M, 0x00, CHANGE_MULTI, program, 0x00, 0x00, 0xf7]
-   #switch to single + change bank + change program
-    return [0xf0, WALDORF_ID, WALDORF_M, 0x00, CHANGE_MODE, 0x00, 0x00, 0x00, 0xf7] + [0xb0|(channel & 0x0f), 32, bank-1] + [0xc0|(channel & 0x0f), program]
-
-def friendlyBankName(bank):
-    if bank == 0: #multi
-        return f"MA-"
-    if bank == numberOfBanks(): #multi DB
-        return f"MX-"
-    if bank > numberOfBanks(): #single DB
-        return f"X-"
-    return f"{str(bank-1).zfill(2)}" #single
-
-def friendlyProgramName(patchNo):   # Pad with leading zeros to make it match the display
-    program = patchNo % numberOfPatchesPerBank()
-    bank = patchNo // numberOfPatchesPerBank()
-    if bank == 0:  #multi
-        return "%s%s" % (friendlyBankName(bank), str(program + 1).zfill(3))
-    return "%s%s" % (friendlyBankName(bank), str(program + 1).zfill(3))
-
-#--------------------------------------------- DETECTION
-
 #-----------------------SYSEX COMMON HEADER 
 WALDORF_ID = 0x3e       # message[1] 
 WALDORF_M = 0x30        # message[2] 
@@ -104,16 +59,71 @@ DUMP_MULTI = 0x73       #Dump Multi Arrangement 0x73
                         
 # Single and Multi dumps are regular straightforward full patch dumps. The parameter dumps however are single parameter dumps via MSB / LSB bytes. This is for remote SysEx control of the synth. Full details are in the M sysex documentaiton.
 
-def createDeviceDetectMessage(channel):
-    # Just request the edit buffer - allegedly, it does not use the device id so that could be quick
-    # The parameter is ignored, it defaults to 0x7f 127 when it hasn't been detected yet
-    return createEditBufferRequest(channel, 127)
+#--------------------------------------------- BANKS & PATCHES
+
+def numberOfBanks():
+    return 1+16
+
+def numberOfPatchesPerBank():
+    return 128
+
+def bankDescriptors():
+    return [{"bank": x, "name": f"Multi Bank A", "size": 128, "type": "Arrangement"} for x in range(1)] + [{"bank": x, "name": f"Bank {(x-1):02d}", "size": 128, "type": "Patch"} for x in range(1,17)]
+
+def friendlyBankName(bank):
+    if bank == 0: #multi
+        return f"MA-"
+    if bank == numberOfBanks(): #multi DB
+        return f"MX-"
+    if bank > numberOfBanks(): #single DB
+        return f"X-"
+    return f"{str(bank-1).zfill(2)}" #single
+
+def friendlyProgramName(patchNo):   # Pad with leading zeros to make it match the display
+    program = patchNo % numberOfPatchesPerBank()
+    bank = patchNo // numberOfPatchesPerBank()
+    if bank == 0:  #multi
+        return "%s%s" % (friendlyBankName(bank), str(program + 1).zfill(3))
+    return "%s%s" % (friendlyBankName(bank), str(program + 1).zfill(3))
+
+def bankSelect(channel, bank):
+    if bank == 0: #multi
+        #byte 5 - arrangement to load 0-127  byte 6 - ignored byte 7 - ignored
+        return [0xf0, WALDORF_ID, WALDORF_M, 0x00, CHANGE_MODE, 0x01, 0x00, 0x00, 0xf7]
+    return [0xf0, WALDORF_ID, WALDORF_M, 0x00, CHANGE_MODE, 0x00, 0x00, 0x00, 0xf7] + [0xb0|(channel & 0x0f), 32, bank-1]
+
+def createCustomProgramChange(channel, patchNo):
+    bank = patchNo // numberOfPatchesPerBank()
+    program = patchNo % numberOfPatchesPerBank()
+    if bank == 0: #multi
+            # switch to multi + change arrangement
+            return [0xf0, WALDORF_ID, WALDORF_M, 0x00, CHANGE_MODE, 0x01, 0x00, 0x00, 0xf7] + [0xf0, WALDORF_ID, WALDORF_M, 0x00, CHANGE_MULTI, program, 0x00, 0x00, 0xf7]
+   #switch to single + change bank + change program
+    return [0xf0, WALDORF_ID, WALDORF_M, 0x00, CHANGE_MODE, 0x00, 0x00, 0x00, 0xf7] + [0xb0|(channel & 0x0f), 32, bank-1] + [0xc0|(channel & 0x0f), program]
+
+#--------------------------------------------- DETECTION & DELAYS
 
 def needsChannelSpecificDetection():
     return False
 
 def deviceDetectWaitMilliseconds():
     return 1000
+
+def adaptChannel():
+    return 1             # 0-based, so 1 means channel 2 on the synth
+
+def createDeviceDetectMessage(channel):
+    # Just request the edit buffer - allegedly, it does not use the device id so that could be quick
+    # The parameter is ignored, it defaults to 0x7f 127 when it hasn't been detected yet
+    return createEditBufferRequest(channel, 127)
+
+def channelIfValidDeviceResponse(message):
+    channel = adaptChannel()
+    DEVICE_ID_DETECTED = message[3]
+    if isEditBufferDump(message):
+        print(f"Waldorf M has been detected as Device_Id {DEVICE_ID_DETECTED}. The adaption code is set to use MIDI channel {channel+1}.")
+        return channel
+    return -1
 
 def generalMessageDelay():
     return 200
@@ -123,16 +133,8 @@ def patchStoreWait():           # Due to littleFS used on internal flash, the sa
 
 def multiDumpWait():
     return time.sleep(0.5)
-
-def channelIfValidDeviceResponse(message):
-    channel = adaptChannel()
-    DEVICE_ID_DETECTED = message[3]
-    if isEditBufferDump(message):
-        print(f"Waldorf M has been detected as Device_Id {DEVICE_ID_DETECTED}. The adaption code is set to use MIDI channel {channel+1}.")
-        return channel
-    return -1
     
-#--------------------------------------------- PROGRAM NUMBER & NAME
+#--------------------------------------------- PATCH NUMBER & NAME
 
 nameBaseIndex = 6 #
 nameLength = 26 # 26 total, 22 visible on store screen, 23 editable on store screen, 16 visible on home screen.... seriously Vladis?
